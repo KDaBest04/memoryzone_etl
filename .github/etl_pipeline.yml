@@ -1,0 +1,31 @@
+name: Daily ETL Pipeline
+
+on:
+  schedule:
+    #0h
+    - cron: '0 17 * * *' 
+  workflow_dispatch: 
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest 
+
+    steps:
+      - name: 1. Lấy code của bạn về máy ảo
+        uses: actions/checkout@v4
+
+      - name: 2. Cài đặt môi trường Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: 3. Cài đặt các thư viện (Pandas, BeautifulSoup...)
+        run: pip install -r requirements.txt
+
+      - name: 4. Chạy tool cào dữ liệu (Tạo ra file CSV tạm thời)
+        run: python scraper.py
+
+      - name: 5. Đẩy dữ liệu lên Cloud Database
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }} 
+        run: python load_to_db.py
